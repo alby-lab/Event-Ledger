@@ -1,30 +1,41 @@
 package com.eventledger.gateway.controller;
 
-import com.eventledger.gateway.dto.HealthResponse;
+import java.sql.Connection;
+
+import javax.sql.DataSource;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.sql.DataSource;
-import java.sql.Connection;
+import com.eventledger.gateway.dto.HealthResponse;
 
 @RestController
 public class HealthController {
 
     private static final Logger log = LoggerFactory.getLogger(HealthController.class);
     
-    @Autowired
-    private DataSource dataSource;
+    private final DataSource dataSource;
 
-    
+    public HealthController(DataSource dataSource) {
+        this.dataSource = dataSource;
+    }
 
     @GetMapping("/health")
     public ResponseEntity<HealthResponse> health() {
-        
-            return null;
+        try (Connection conn = dataSource.getConnection()) {
+            if (conn.isValid(2)) {
+                return ResponseEntity.ok(new HealthResponse("UP", "event-gateway-service"));
+            }
+            return ResponseEntity.status(503)
+                    .body(new HealthResponse("DOWN", "event-gateway-service"));
+        } catch (Exception e) {
+            log.error("Health check failed: {}", e.getMessage());
+            return ResponseEntity.status(503)
+                    .body(new HealthResponse("DOWN", "event-gateway-service"));
         }
+    }
     }
 

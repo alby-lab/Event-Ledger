@@ -7,6 +7,7 @@ import java.util.Map;
 import com.eventledger.gateway.dto.EventType;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -16,6 +17,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
+
+import com.eventledger.gateway.util.MetadataConverter;
 
 @Entity
 @Table(name = "events", indexes = { @Index(name = "idx_event_id", columnList = "eventId", unique = true),
@@ -46,6 +49,7 @@ public class EventEntity {
 	private Instant eventTimestamp;
 
 
+	@Convert(converter = MetadataConverter.class)
 	@Column(columnDefinition = "TEXT")
 	private Map<String, String> metadata;
 
